@@ -21,40 +21,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-//            SkillSharpTheme {
-//                // A surface container using the 'background' color from the theme
-//                Surface(
-//                    modifier = Modifier.fillMaxSize(),
-//                    color = MaterialTheme.colorScheme.background
-//                ) {
-//                    Greeting("Android")
-//                }            }
             SkillSharpTheme {
-                val navController = rememberNavController()
-                MainScreen(navController = navController)
+                Surface(color = MaterialTheme.colorScheme.background) {LaunchApp()}
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SkillSharpTheme {
-        Greeting("Android")
+fun LaunchApp() {
+    val navController = rememberNavController()
+    var SkillName = "SkillName"
+    NavHost(navController = navController, startDestination = "main") {
+    composable("main") { MainScreen(navController) }
+    composable("page1") { SkillPage(SkillName) }
     }
 }
 
@@ -69,17 +56,18 @@ fun MainScreen(navController: NavController) {
         Text(
             text = "SkillSharp",
             fontWeight = FontWeight.Bold,
-            fontSize = 24.sp,
+            fontSize = 32.sp,
         )
         LazyColumn {
             items(listOf("Item 1", "Item 2", "Item 3")) { item ->
-                Text(
-                    text = item,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                )
+                Button(onClick = { navController.navigate("SkillPage") }) {
+                    Text(text = item)
+                }
             }
         }
     }
+}
+@Composable
+fun SkillPage(SkillName: String) {
+    Text(SkillName)
 }
