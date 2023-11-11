@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -41,8 +43,34 @@ fun LaunchApp() {
     val navController = rememberNavController()
     var SkillName = "SkillName"
     NavHost(navController = navController, startDestination = "main") {
-    composable("main") { MainScreen(navController) }
-    composable("SkillPage") { SkillPage(SkillName) }
+    composable(
+        route = "main",
+        enterTransition = {
+            slideIntoContainer(
+            AnimatedContentTransitionScope.SlideDirection.Left,
+            animationSpec = tween(700)
+            )
+        },
+        exitTransition = {
+            slideOutOfContainer(
+            AnimatedContentTransitionScope.SlideDirection.Right,
+            animationSpec = tween(700)
+            )
+        }) { MainScreen(navController) }
+    composable(
+        route = "SkillPage",
+        enterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left,
+                animationSpec = tween(700)
+            )
+        },
+        exitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Right,
+                animationSpec = tween(700)
+            )
+        }) { SkillPage(SkillName) }
     }
 }
 
@@ -71,5 +99,15 @@ fun MainScreen(navController: NavController) {
 }
 @Composable
 fun SkillPage(SkillName: String) {
-    Text(SkillName)
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = SkillName,
+            fontWeight = FontWeight.Bold,
+            fontSize = 32.sp,
+        )
+    }
 }
