@@ -1,6 +1,7 @@
 package com.ciupercutzaroz.skillsharp
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -41,7 +42,7 @@ fun LaunchApp() {
     var SkillName = "SkillName"
     NavHost(navController = navController, startDestination = "main") {
     composable("main") { MainScreen(navController) }
-    composable("page1") { SkillPage(SkillName) }
+    composable("SkillPage") { SkillPage(SkillName) }
     }
 }
 
@@ -60,6 +61,7 @@ fun MainScreen(navController: NavController) {
         )
         LazyColumn {
             items(listOf("Item 1", "Item 2", "Item 3")) { item ->
+                Log.d("MainScreen", "Item: $item")
                 Button(onClick = { navController.navigate("SkillPage") }) {
                     Text(text = item)
                 }
