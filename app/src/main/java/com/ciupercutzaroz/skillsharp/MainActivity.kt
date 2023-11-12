@@ -579,10 +579,12 @@ fun LaunchApp() {
     }
     val fileContent = file.readText()
     // store filecontent in a List of Roadmaps
-    var roadmapsRead = DeserializeRoadmapList(fileContent)
-    // add each element of the list to the selectedRoadmaps list
-    for (roadmap in roadmapsRead) {
-        selectedRoadmaps.add(roadmap)
+    if(fileContent != "") {
+        var roadmapsRead = DeserializeRoadmapList(fileContent)
+        // add each element of the list to the selectedRoadmaps list
+        for (roadmap in roadmapsRead) {
+            selectedRoadmaps.add(roadmap)
+        }
     }
 
     Log.d("LaunchApp", "File content: $fileContent")
