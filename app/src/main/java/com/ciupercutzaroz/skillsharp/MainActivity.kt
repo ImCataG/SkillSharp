@@ -562,8 +562,7 @@ var filename : String = ""
 @Composable
 fun LaunchApp() {
     val navController = rememberNavController()
-    // try reding the file
-    filename = LocalContext.current.filesDir.toString() + "/roadmaps.json"
+
 
 //    try {
 //        val fis = FileInputStream(filename)
@@ -573,8 +572,11 @@ fun LaunchApp() {
 //        // log error
 //        Log.d("LaunchApp", "Error: $e")
 //    }
-
+    // if a file with that name doesn't exist, create it
     val file = File(LocalContext.current.filesDir, "roadmaps.json")
+    if (!file.exists()) {
+        file.createNewFile()
+    }
     val fileContent = file.readText()
     // store filecontent in a List of Roadmaps
     var roadmapsRead = DeserializeRoadmapList(fileContent)
