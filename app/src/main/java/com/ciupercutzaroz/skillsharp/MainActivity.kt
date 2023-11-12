@@ -24,6 +24,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -668,18 +670,16 @@ fun MainScreen(navController: NavController, viewModel: SkillsViewModel = viewMo
 @Composable
 fun RoadmapPage(roadmapName: String, viewModel: SkillsViewModel = viewModel()) {
     Log.d("RoadmapString", "RoadmapName: $roadmapName")
-    var selectedRoadmap : Roadmap = Roadmap("None", listOf())
+    var selectedRoadmap: Roadmap = Roadmap("None", listOf())
     for (roadmap in selectedRoadmaps) {
         if (roadmap.roadmapName == roadmapName) {
             selectedRoadmap = roadmap
         }
     }
-    // need a page for each difficulty levelin the roadmap
-    // swipehorizontally to change difficulty level
-    // each difficulty level has a list of skills
-    // each skill has a title, description, status, and list of resources
+
     val pageCount = selectedRoadmap.roadmapDifficulties.size
     val pagerState = rememberPagerState(pageCount = { 3 })
+
     HorizontalPager(state = pagerState) {
         val difficulty = selectedRoadmap.roadmapDifficulties[it]
         Column(
@@ -688,17 +688,46 @@ fun RoadmapPage(roadmapName: String, viewModel: SkillsViewModel = viewModel()) {
             verticalArrangement = Arrangement.Center
         ) {
             Text(text = difficulty.difficultyLevel)
-            LazyColumn {
-                items(difficulty.difficultySkills) { item ->
-                    Log.d("MainScreen", "Item: $item")
-                    Button(onClick = { /*TODO*/ }) {
-                        Text(text = item.skillTitle)
+            for (skill in difficulty.difficultySkills) {
+                var showDetails by remember { mutableStateOf(false) }
+                var isChecked by remember { mutableStateOf(skill.skillStatus) }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(onClick = { showDetails = !showDetails }) {
+                        Text(text = skill.skillTitle)
+                    }
+                    Switch(
+                        modifier = Modifier.padding(8.dp),
+                        checked = isChecked,
+                        onCheckedChange = { isChecked = it },
+                    )
+                    // if the switch is checked, set the skillStatus to true
+                    skill.skillStatus = isChecked
+                    // save to file
+                    val serializedList = SerializeRoadmapList(selectedRoadmaps)
+
+                    val file = File(LocalContext.current.filesDir, "roadmaps.json")
+                    file.writeText(serializedList)
+
+
+                }
+
+                if (showDetails) {
+                    Text(text = skill.skillDescription, fontSize = 14.sp, fontStyle = FontStyle.Italic, modifier = Modifier.padding(8.dp))
+                    Text(text = "Resources:")
+                    skill.skillResources.forEach { resource ->
+                        Text(text = resource.resourceName, fontSize = 12.sp, modifier = Modifier.padding(8.dp))
+                        Text(text = resource.resourceDescription, fontSize = 12.sp, modifier = Modifier.padding(8.dp))
                     }
                 }
             }
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

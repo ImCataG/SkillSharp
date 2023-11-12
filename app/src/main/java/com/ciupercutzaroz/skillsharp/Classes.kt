@@ -53,7 +53,7 @@ class Difficulty(
 class Skill(
     val skillTitle: String,
     val skillDescription: String,
-    val skillStatus: Boolean,
+    var skillStatus: Boolean,
     val skillResources: List<Resource>
 )
 
