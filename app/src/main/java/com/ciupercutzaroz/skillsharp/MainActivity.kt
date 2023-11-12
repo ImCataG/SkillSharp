@@ -41,6 +41,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ciupercutzaroz.skillsharp.ui.theme.SkillSharpTheme
+import java.io.File
 
 var selectedRoadmaps = mutableStateListOf<Roadmap>()
 class SkillsViewModel : ViewModel() {
@@ -544,6 +545,7 @@ class SkillsViewModel : ViewModel() {
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             SkillSharpTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {LaunchApp()}
@@ -551,10 +553,33 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
+var filename : String = ""
 @Composable
 fun LaunchApp() {
     val navController = rememberNavController()
+    // try reding the file
+    filename = LocalContext.current.filesDir.toString() + "/roadmaps.json"
+
+//    try {
+//        val fis = FileInputStream(filename)
+//        val fileContent = fis.bufferedReader().use { it.readText() }
+//        selectedRoadmaps = DeserializeRoadmapList(fileContent) as SnapshotStateList<Roadmap>
+//    } catch (e: Exception) {
+//        // log error
+//        Log.d("LaunchApp", "Error: $e")
+//    }
+
+    val file = File(LocalContext.current.filesDir, "roadmaps.json")
+    val fileContent = file.readText()
+    // store filecontent in a List of Roadmaps
+    var roadmapsRead = DeserializeRoadmapList(fileContent)
+    // add each element of the list to the selectedRoadmaps list
+    for (roadmap in roadmapsRead) {
+        selectedRoadmaps.add(roadmap)
+    }
+
+    Log.d("LaunchApp", "File content: $fileContent")
+
     NavHost(navController = navController, startDestination = "main") {
     composable(
         route = "main",
@@ -706,8 +731,14 @@ fun AddSkillPage(viewModel: SkillsViewModel = viewModel()) {
                                     }
                                     if (!found)
                                     {selectedRoadmaps.add(item)
+                                    // serialize the list and save it to file
+                                    val serializedList = SerializeRoadmapList(selectedRoadmaps)
 
-                                 Log.d("Added", "Item: $item")}
+                                    val file = File(context.filesDir, "roadmaps.json")
+                                    file.writeText(serializedList)
+                                    Toast.makeText(context, "Added to list", Toast.LENGTH_SHORT).show()}
+
+
                                     // else toast with 'you already got that one in there'
                                     else
                                     {
@@ -719,6 +750,5 @@ fun AddSkillPage(viewModel: SkillsViewModel = viewModel()) {
                 }
             }
         }
-
     }
 }

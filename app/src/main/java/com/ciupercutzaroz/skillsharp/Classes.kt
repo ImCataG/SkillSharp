@@ -81,3 +81,13 @@ fun SerializeCategory(category: Category): String {
     val gson = Gson()
     return gson.toJson(category)
 }
+
+fun SerializeRoadmapList(roadmaps: List<Roadmap>): String {
+    val gson = Gson()
+    return gson.toJson(roadmaps)
+}
+
+fun DeserializeRoadmapList(json: String): List<Roadmap> {
+    val gson = Gson()
+    return gson.fromJson(json, Array<Roadmap>::class.java).toList()
+}
