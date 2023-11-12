@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -596,7 +599,7 @@ fun LaunchApp() {
             )
         }) { MainScreen(navController) }
     composable(
-        route = "SkillPage/{skillName}",
+        route = "RoadmapPage/{roadmapName}",
         enterTransition = {
             slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Left,
@@ -609,11 +612,13 @@ fun LaunchApp() {
                 animationSpec = tween(700)
             )
         }) { backStackEntry ->
-        val skillName = backStackEntry.arguments?.getString("skillName") ?: "Default Skill"
-        SkillPage(skillName)
+        RoadmapPage(
+            backStackEntry.arguments?.getString("roadmapName") ?: "",
+            viewModel()
+        )
         }
     composable(
-        route = "AddSkillPage",
+        route = "AddRoadmapPage",
         enterTransition = {
             slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Left,
@@ -626,7 +631,7 @@ fun LaunchApp() {
                 animationSpec = tween(700)
             )
         }) {
-        AddSkillPage()
+        AddRoadmapPage()
         }
     }
 }
@@ -647,33 +652,57 @@ fun MainScreen(navController: NavController, viewModel: SkillsViewModel = viewMo
         LazyColumn {
             items(selectedRoadmaps) { item ->
                 Log.d("MainScreen", "Item: $item")
-                Button(onClick = { navController.navigate("SkillPage/$item") }) {
+                val roadmapName = item.roadmapName
+                Button(onClick = { navController.navigate("RoadmapPage/$roadmapName") }) {
                     Text(text = item.roadmapName)
                     }
                 }
             }
-        Button(onClick = { navController.navigate("AddSkillPage") }) {
+        Button(onClick = { navController.navigate("AddRoadmapPage") }) {
             Text(text = "Add Item")
             }
 
         }
 }
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun SkillPage(skillName: String, viewModel: SkillsViewModel = viewModel()) {
-//    val skill = viewModel.getSkillByName(skillName) ?: return
-
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("placeholder", fontSize = 24.sp)
+fun RoadmapPage(roadmapName: String, viewModel: SkillsViewModel = viewModel()) {
+    Log.d("RoadmapString", "RoadmapName: $roadmapName")
+    var selectedRoadmap : Roadmap = Roadmap("None", listOf())
+    for (roadmap in selectedRoadmaps) {
+        if (roadmap.roadmapName == roadmapName) {
+            selectedRoadmap = roadmap
+        }
+    }
+    // need a page for each difficulty levelin the roadmap
+    // swipehorizontally to change difficulty level
+    // each difficulty level has a list of skills
+    // each skill has a title, description, status, and list of resources
+    val pageCount = selectedRoadmap.roadmapDifficulties.size
+    val pagerState = rememberPagerState(pageCount = { 3 })
+    HorizontalPager(state = pagerState) {
+        val difficulty = selectedRoadmap.roadmapDifficulties[it]
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(text = difficulty.difficultyLevel)
+            LazyColumn {
+                items(difficulty.difficultySkills) { item ->
+                    Log.d("MainScreen", "Item: $item")
+                    Button(onClick = { /*TODO*/ }) {
+                        Text(text = item.skillTitle)
+                    }
+                }
+            }
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddSkillPage(viewModel: SkillsViewModel = viewModel()) {
+fun AddRoadmapPage(viewModel: SkillsViewModel = viewModel()) {
     val categoryList = viewModel.categoryList
     var items by remember { mutableStateOf(viewModel.categoryCoding.categoryRoadmaps) }
     val context = LocalContext.current
