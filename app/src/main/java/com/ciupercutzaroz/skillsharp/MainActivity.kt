@@ -2,41 +2,49 @@ package com.ciupercutzaroz.skillsharp
 
 import android.os.Bundle
 import android.util.Log
-import android.widget.Spinner
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.ciupercutzaroz.skillsharp.ui.theme.SkillSharpTheme
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.*
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.text.font.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
+import com.ciupercutzaroz.skillsharp.ui.theme.SkillSharpTheme
 
+var selectedRoadmaps = mutableStateListOf<Roadmap>()
 class SkillsViewModel : ViewModel() {
+
     val category1 = DeserializeCategory("{\n" +
             "    \"categoryName\": \"Coding\",\n" +
             "    \"categoryRoadmaps\": [\n" +
@@ -224,7 +232,7 @@ class SkillsViewModel : ViewModel() {
             "    ]\n" +
             "  }")
 
-    val CategoryList = DeserializeCategoryList("[{\n" +
+    val categoryList = DeserializeCategoryList("[{\n" +
             "    \"categoryName\": \"Coding\",\n" +
             "    \"categoryRoadmaps\": [\n" +
             "    {\n" +
@@ -526,7 +534,9 @@ class SkillsViewModel : ViewModel() {
             "        ]\n" +
             "    }\n" +
             "]")
-
+    val categoryCoding = categoryList[0]
+    val categoryDataAnalysis = categoryList[1]
+    val categorySoftwareDevelopment = categoryList[2]
 
 
 
@@ -598,7 +608,7 @@ fun LaunchApp() {
 
 // Create a main screen with a title and a list of items
 @Composable
-fun MainScreen(navController: NavController) {
+fun MainScreen(navController: NavController, viewModel: SkillsViewModel = viewModel()) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -610,10 +620,10 @@ fun MainScreen(navController: NavController) {
             fontSize = 32.sp,
         )
         LazyColumn {
-            items(listOf("Item 1", "Item 2", "Item 3")) { item ->
+            items(selectedRoadmaps) { item ->
                 Log.d("MainScreen", "Item: $item")
                 Button(onClick = { navController.navigate("SkillPage/$item") }) {
-                    Text(text = item)
+                    Text(text = item.roadmapName)
                     }
                 }
             }
@@ -636,10 +646,12 @@ fun SkillPage(skillName: String, viewModel: SkillsViewModel = viewModel()) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddSkillPage(viewModel: SkillsViewModel = viewModel()) {
-    val categoryList = viewModel.CategoryList
-
+    val categoryList = viewModel.categoryList
+    var items by remember { mutableStateOf(viewModel.categoryCoding.categoryRoadmaps) }
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -664,14 +676,49 @@ fun AddSkillPage(viewModel: SkillsViewModel = viewModel()) {
             categoryList.forEach { category ->
                 Button(
                     onClick = {
-                        // Handle button click
-                        Log.d("AddSkillPage", "Selected Category: ${category.categoryName}")
+                        if(category.categoryName == "Coding") {
+                            items = viewModel.categoryCoding.categoryRoadmaps
+                        }
+                        if(category.categoryName == "Data Analysis") {
+                            items = viewModel.categoryDataAnalysis.categoryRoadmaps
+                        }
+                        if(category.categoryName == "Software Development") {
+                            items = viewModel.categorySoftwareDevelopment.categoryRoadmaps
+                        }
                     },
                     modifier = Modifier.padding(end = 8.dp)
                 ) {
                     Text(category.categoryName)
                 }
+
             }
         }
+        LazyColumn {
+            items(items) { item ->
+                Log.d("MainScreen", "Item: $item")
+                // make button width fill the screen
+                Button(onClick = { // if there is no element with the same roadmapName, add it to the list
+                                 var found = false
+                                    for (roadmap in selectedRoadmaps) {
+                                        if (roadmap.roadmapName == item.roadmapName) {
+                                            found = true
+                                        }
+                                    }
+                                    if (!found)
+                                    {selectedRoadmaps.add(item)
+
+                                 Log.d("Added", "Item: $item")}
+                                    // else toast with 'you already got that one in there'
+                                    else
+                                    {
+                                        Toast.makeText(context, "You already got that one in there", Toast.LENGTH_SHORT).show()}
+                                 }, modifier = Modifier.fillMaxWidth()) {
+
+                    Text(text = item.roadmapName)
+
+                }
+            }
+        }
+
     }
 }

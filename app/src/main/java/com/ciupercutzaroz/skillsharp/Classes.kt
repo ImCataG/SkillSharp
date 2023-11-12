@@ -71,3 +71,13 @@ fun DeserializeCategory(json: String): Category {
     val gson = Gson()
     return gson.fromJson(json, Category::class.java)
 }
+
+fun SerializeCategoryList(categories: List<Category>): String {
+    val gson = Gson()
+    return gson.toJson(categories)
+}
+
+fun SerializeCategory(category: Category): String {
+    val gson = Gson()
+    return gson.toJson(category)
+}
